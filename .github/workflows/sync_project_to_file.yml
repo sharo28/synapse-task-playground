@@ -1,0 +1,50 @@
+name: Sync Project to Filebase
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned]
+  project_v2_item:
+    types: [created, edited, deleted]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PROJECT_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          # requestsなど必要な依存関係があればここでインストール（今回は標準ライブラリとgh CLIを使用するため不要）
+          # もし将来的に増やす場合はここに記述
+
+      - name: Run synchronization script
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
+        run: |
+          python3 sync.py
+
+      - name: Commit and Push changes
+        run: |
+          # 変更があるか確認
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "🔄 変更を検知しました。リポジトリにコミット＆プッシュします..."
+            git config --local user.name "github-actions[bot]"
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore: sync task caches from GitHub Project [skip ci]"
+            git push origin main
+          else
+            echo "✅ 変更はありませんでした。同期をスキップします。"
+          fi
