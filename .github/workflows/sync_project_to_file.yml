@@ -3,7 +3,7 @@ name: Sync Project to Filebase
 on:
   issues:
     types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned]
-  project_v2_item:
+  issue_comment:
     types: [created, edited, deleted]
   workflow_dispatch:
 
